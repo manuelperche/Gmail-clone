@@ -1,5 +1,5 @@
 import { Settings } from 'lucide-react';
-import type { ThreadGrouping } from '../../../data/models/email.model';
+import type { ThreadGrouping } from '../../../domain/models/email.model';
 
 interface PageHeaderProps {
   grouping: ThreadGrouping;

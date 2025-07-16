@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import type { Thread, ThreadGrouping, ThreadListItem } from '../../data/models/email.model';
+import type { Thread, ThreadGrouping, ThreadListItem } from '../models/email.model';
 import { EmailUseCase } from '../usecases/email.usecase';
-import { EmailRepository } from '../../data/repositories/email.repository';
-import { EmailDataSource } from '../../data/datasources/email.datasource';
+import { BulkOperation } from '../enums/bulk-operation.enum';
+import { DIContainer } from '../di/container';
 
 interface EmailStore {
   currentGrouping: ThreadGrouping;
@@ -10,21 +10,21 @@ interface EmailStore {
   selectedThreadIds: Set<string>;
   currentThread: Thread | null;
   emailUseCase: EmailUseCase;
+  isLoading: boolean;
   
   setGrouping: (grouping: ThreadGrouping) => void;
-  loadThreads: () => void;
+  loadThreads: () => Promise<void>;
   toggleThreadSelection: (threadId: string) => void;
   selectAllThreads: (select: boolean) => void;
   selectAllInPage: () => void;
-  performBulkOperation: (operation: string) => void;
+  performBulkOperation: (operation: BulkOperation) => void;
   loadThread: (threadId: string) => void;
   toggleEmailStar: (threadId: string, emailId: string) => void;
   clearSelection: () => void;
 }
 
-const dataSource = new EmailDataSource();
-const repository = new EmailRepository(dataSource);
-const emailUseCase = new EmailUseCase(repository);
+const container = DIContainer.getInstance();
+const emailUseCase = container.getEmailUseCase();
 
 export const useEmailStore = create<EmailStore>((set, get) => ({
   currentGrouping: 'inbox',
@@ -32,15 +32,26 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
   selectedThreadIds: new Set(),
   currentThread: null,
   emailUseCase,
+  isLoading: false,
 
   setGrouping: (grouping) => {
-    set({ currentGrouping: grouping, selectedThreadIds: new Set() });
+    set({ 
+      currentGrouping: grouping, 
+      selectedThreadIds: new Set(),
+      threads: [], // Clear old data immediately
+      isLoading: true // Show loading state
+    });
     get().loadThreads();
   },
 
-  loadThreads: () => {
+  loadThreads: async () => {
+    set({ isLoading: true });
+    
+    // Simulate realistic loading time (like an API call)
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
     const threads = emailUseCase.getThreadsByGrouping(get().currentGrouping);
-    set({ threads });
+    set({ threads, isLoading: false });
   },
 
   toggleThreadSelection: (threadId) => {
@@ -77,11 +88,10 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
     const { selectedThreadIds } = get();
     const threadIds = Array.from(selectedThreadIds);
     
-    if (threadIds.length > 0) {
-      emailUseCase.performBulkOperation(threadIds, operation);
-      set({ selectedThreadIds: new Set() });
-      get().loadThreads();
-    }
+    emailUseCase.performBulkOperation(threadIds, operation);
+    set({ selectedThreadIds: new Set() });
+    // Fire-and-forget async reload
+    get().loadThreads();
   },
 
   loadThread: (threadId) => {

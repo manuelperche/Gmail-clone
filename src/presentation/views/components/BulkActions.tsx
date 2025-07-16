@@ -1,9 +1,10 @@
-import { Archive, AlertTriangle, Trash2, Mail, MailOpen, Clock, CheckCircle, RotateCcw, X } from 'lucide-react';
+import { BulkOperation } from '../../../domain/enums/bulk-operation.enum';
+import { IconService } from '../../../domain/services/icon.service';
 
 interface BulkActionsProps {
   selectedCount: number;
-  operations: string[];
-  onOperation: (operation: string) => void;
+  operations: BulkOperation[];
+  onOperation: (operation: BulkOperation) => void;
   isAllSelected: boolean;
   isPartiallySelected: boolean;
   onSelectAll: () => void;
@@ -19,32 +20,19 @@ export const BulkActions = ({
   onSelectAll,
   totalThreads
 }: BulkActionsProps) => {
-  const operationLabels: Record<string, string> = {
-    archive: 'Archive',
-    spam: 'Report spam',
-    trash: 'Delete',
-    markAsRead: 'Mark as read',
-    markAsUnread: 'Mark as unread',
-    snooze: 'Snooze',
-    notSpam: 'Not spam',
-    restore: 'Move to Inbox',
-    deleteForever: 'Delete forever'
+  const operationLabels: Record<BulkOperation, string> = {
+    [BulkOperation.ARCHIVE]: 'Archive',
+    [BulkOperation.SPAM]: 'Report spam',
+    [BulkOperation.TRASH]: 'Delete',
+    [BulkOperation.MARK_AS_READ]: 'Mark as read',
+    [BulkOperation.MARK_AS_UNREAD]: 'Mark as unread',
+    [BulkOperation.SNOOZE]: 'Snooze',
+    [BulkOperation.NOT_SPAM]: 'Not spam',
+    [BulkOperation.RESTORE]: 'Move to Inbox',
+    [BulkOperation.DELETE_FOREVER]: 'Delete forever',
+    [BulkOperation.UNSNOOZE]: 'Unsnooze',
   };
 
-  const getOperationIcon = (operation: string) => {
-    switch (operation) {
-      case 'archive': return Archive;
-      case 'spam': return AlertTriangle;
-      case 'trash': return Trash2;
-      case 'markAsRead': return MailOpen;
-      case 'markAsUnread': return Mail;
-      case 'snooze': return Clock;
-      case 'notSpam': return CheckCircle;
-      case 'restore': return RotateCcw;
-      case 'deleteForever': return X;
-      default: return Mail;
-    }
-  };
 
   return (
     <div className="flex items-center h-12 px-6 bg-white border-b border-[#e8eaed]">
@@ -82,7 +70,7 @@ export const BulkActions = ({
       {selectedCount > 0 && (
         <div className="flex items-center ml-6 space-x-2">
           {operations.map(op => {
-            const IconComponent = getOperationIcon(op);
+            const IconComponent = IconService.getOperationIcon(op);
             return (
               <button
                 key={op}

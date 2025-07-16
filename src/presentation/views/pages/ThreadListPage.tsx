@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import type { ThreadGrouping } from '../../../data/models/email.model';
+import type { ThreadGrouping } from '../../../domain/models/email.model';
 import { useThreadListViewModel } from '../../viewmodels/thread-list.viewmodel';
 import { ThreadListItemComponent } from '../components/ThreadListItem';
 import { BulkActions } from '../components/BulkActions';
 import { PageHeader } from '../components/PageHeader';
+import { ThreadListSkeleton } from '../components/ThreadListSkeleton';
 
 export const ThreadListPage = () => {
   const { grouping } = useParams<{ grouping: ThreadGrouping }>();
@@ -15,6 +16,7 @@ export const ThreadListPage = () => {
     isAllSelected,
     isPartiallySelected,
     availableOperations,
+    isLoading,
     handleSelectAll,
     toggleThreadSelection,
     performBulkOperation,
@@ -40,7 +42,9 @@ export const ThreadListPage = () => {
       />
       
       <div className="flex-1 overflow-auto bg-white">
-        {threads.length === 0 ? (
+        {isLoading ? (
+          <ThreadListSkeleton />
+        ) : threads.length === 0 ? (
           <div className="text-center py-20 text-[#5f6368]">
             <div className="text-6xl mb-4">📭</div>
             <div className="text-lg">No conversations in {grouping}</div>

@@ -1,5 +1,5 @@
 import { useEmailStore } from '../../domain/store/email.store';
-import type { ThreadGrouping } from '../../data/models/email.model';
+import type { ThreadGrouping } from '../../domain/models/email.model';
 import { useEffect } from 'react';
 
 export const useThreadListViewModel = (grouping: ThreadGrouping) => {
@@ -8,6 +8,7 @@ export const useThreadListViewModel = (grouping: ThreadGrouping) => {
     selectedThreadIds,
     currentGrouping,
     emailUseCase,
+    isLoading,
     setGrouping,
     loadThreads,
     toggleThreadSelection,
@@ -69,6 +70,7 @@ export const useThreadListViewModel = (grouping: ThreadGrouping) => {
     isAllSelected,
     isPartiallySelected,
     availableOperations,
+    isLoading,
     handleSelectAll,
     toggleThreadSelection,
     performBulkOperation,

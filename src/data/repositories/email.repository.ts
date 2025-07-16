@@ -1,20 +1,20 @@
-import { EmailDataSource } from "../datasources/email.datasource";
+import type { IEmailDataSource } from "../../domain/interfaces/email-datasource.interface";
+import type { IEmailRepository } from "../../domain/interfaces/email-repository.interface";
 import type {
   Thread,
   ThreadGrouping,
   ThreadListItem,
-} from "../models/email.model";
+} from "../../domain/models/email.model";
 
-export class EmailRepository {
-  private dataSource: EmailDataSource;
+export class EmailRepository implements IEmailRepository {
+  private dataSource: IEmailDataSource;
 
-  constructor(dataSource: EmailDataSource) {
+  constructor(dataSource: IEmailDataSource) {
     this.dataSource = dataSource;
   }
 
   getThreadsByGrouping(grouping: ThreadGrouping): ThreadListItem[] {
     const allThreads = this.dataSource.getAllThreads();
-    const currentUser = this.dataSource.getCurrentUser();
 
     const filteredThreads = allThreads.filter((thread) => {
       switch (grouping) {
@@ -50,19 +50,22 @@ export class EmailRepository {
 
     return filteredThreads
       .map((thread) => {
-        const lastEmail = thread.emails[thread.emails.length - 1];
-        const senders = thread.emails
-          .filter((e) => e.from.email !== currentUser.email)
-          .map((e) => e.from.name);
-        const uniqueSenders = [...new Set(senders)];
+        const latestEmail = thread.emails[thread.emails.length - 1];
+        const senders = [
+          ...new Set(
+            thread.emails
+              .filter((e) => !e.isDraft && !e.isSent)
+              .map((e) => e.from.name)
+          ),
+        ];
+        const hasUnread = thread.emails.some((e) => !e.isRead && !e.isSent);
 
         return {
           threadId: thread.id,
-          subject: thread.emails[0].subject,
-          snippet: lastEmail.body.substring(0, 100) + "...",
-          senders:
-            uniqueSenders.length > 0 ? uniqueSenders : [currentUser.name],
-          hasUnread: thread.emails.some((e) => !e.isRead && !e.isSent),
+          subject: latestEmail.subject,
+          snippet: latestEmail.body.substring(0, 100) + "...",
+          senders: senders.length > 0 ? senders : [latestEmail.from.name],
+          hasUnread,
           isStarred: thread.emails.some((e) => e.isStarred),
           emailCount: thread.emails.length,
           lastActivityTimestamp: thread.lastActivityTimestamp,
@@ -80,76 +83,131 @@ export class EmailRepository {
 
   archiveThreads(threadIds: string[]): void {
     threadIds.forEach((id) => {
-      this.dataSource.updateThread(id, { isArchived: true });
-    });
-  }
-
-  markAsSpam(threadIds: string[]): void {
-    threadIds.forEach((id) => {
-      this.dataSource.updateThread(id, { isSpam: true });
-    });
-  }
-
-  moveToTrash(threadIds: string[]): void {
-    threadIds.forEach((id) => {
-      this.dataSource.updateThread(id, { isTrashed: true });
-    });
-  }
-
-  markAsRead(threadIds: string[], read: boolean): void {
-    threadIds.forEach((threadId) => {
-      const thread = this.dataSource.getThread(threadId);
+      const thread = this.dataSource.getThread(id);
       if (thread) {
-        thread.emails.forEach((email) => {
-          if (!email.isSent) {
-            this.dataSource.updateEmail(threadId, email.id, { isRead: read });
-          }
-        });
+        const updatedThread = { ...thread, isArchived: true };
+        this.dataSource.updateThread(updatedThread);
       }
     });
   }
 
-  snoozeThreads(threadIds: string[]): void {
-    const snoozedUntil = new Date(
-      this.dataSource.getFrozenTime().getTime() + 7 * 24 * 60 * 60 * 1000
-    );
+  markThreadsAsSpam(threadIds: string[]): void {
     threadIds.forEach((id) => {
-      this.dataSource.updateThread(id, { isSnoozed: true, snoozedUntil });
+      const thread = this.dataSource.getThread(id);
+      if (thread) {
+        const updatedThread = { ...thread, isSpam: true };
+        this.dataSource.updateThread(updatedThread);
+      }
     });
   }
 
-  toggleStar(threadId: string, emailId: string): void {
-    const thread = this.dataSource.getThread(threadId);
-    if (thread) {
-      const email = thread.emails.find((e) => e.id === emailId);
-      if (email) {
-        this.dataSource.updateEmail(threadId, emailId, {
-          isStarred: !email.isStarred,
-        });
+  markThreadsAsNotSpam(threadIds: string[]): void {
+    threadIds.forEach((id) => {
+      const thread = this.dataSource.getThread(id);
+      if (thread) {
+        const updatedThread = { ...thread, isSpam: false };
+        this.dataSource.updateThread(updatedThread);
       }
-    }
+    });
+  }
+
+  trashThreads(threadIds: string[]): void {
+    threadIds.forEach((id) => {
+      const thread = this.dataSource.getThread(id);
+      if (thread) {
+        const updatedThread = { ...thread, isTrashed: true };
+        this.dataSource.updateThread(updatedThread);
+      }
+    });
+  }
+
+  restoreThreads(threadIds: string[]): void {
+    threadIds.forEach((id) => {
+      const thread = this.dataSource.getThread(id);
+      if (thread) {
+        const updatedThread = { ...thread, isTrashed: false };
+        this.dataSource.updateThread(updatedThread);
+      }
+    });
+  }
+
+  deleteThreadsForever(threadIds: string[]): void {
+    // In a real implementation, this would actually delete the threads
+    // For now, we'll just mark them as deleted (same as trash)
+    this.trashThreads(threadIds);
+  }
+
+  markThreadsAsRead(threadIds: string[]): void {
+    threadIds.forEach((id) => {
+      const thread = this.dataSource.getThread(id);
+      if (thread) {
+        const updatedEmails = thread.emails.map((email) => ({
+          ...email,
+          isRead: email.isSent ? email.isRead : true,
+        }));
+        const updatedThread = { ...thread, emails: updatedEmails };
+        this.dataSource.updateThread(updatedThread);
+      }
+    });
+  }
+
+  markThreadsAsUnread(threadIds: string[]): void {
+    threadIds.forEach((id) => {
+      const thread = this.dataSource.getThread(id);
+      if (thread) {
+        const updatedEmails = thread.emails.map((email) => ({
+          ...email,
+          isRead: email.isSent ? email.isRead : false,
+        }));
+        const updatedThread = { ...thread, emails: updatedEmails };
+        this.dataSource.updateThread(updatedThread);
+      }
+    });
   }
 
   markThreadAsRead(threadId: string): void {
+    this.markThreadsAsRead([threadId]);
+  }
+
+  snoozeThreads(threadIds: string[]): void {
+    const snoozedUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    threadIds.forEach((id) => {
+      const thread = this.dataSource.getThread(id);
+      if (thread) {
+        const updatedThread = {
+          ...thread,
+          isSnoozed: true,
+          snoozedUntil,
+        };
+        this.dataSource.updateThread(updatedThread);
+      }
+    });
+  }
+
+  unsnoozeThreads(threadIds: string[]): void {
+    threadIds.forEach((id) => {
+      const thread = this.dataSource.getThread(id);
+      if (thread) {
+        const updatedThread = {
+          ...thread,
+          isSnoozed: false,
+          snoozedUntil: undefined,
+        };
+        this.dataSource.updateThread(updatedThread);
+      }
+    });
+  }
+
+  toggleEmailStar(threadId: string, emailId: string): void {
     const thread = this.dataSource.getThread(threadId);
     if (thread) {
-      thread.emails.forEach((email) => {
-        if (!email.isSent && !email.isRead) {
-          this.dataSource.updateEmail(threadId, email.id, { isRead: true });
-        }
-      });
+      const updatedEmails = thread.emails.map((email) =>
+        email.id === emailId
+          ? { ...email, isStarred: !email.isStarred }
+          : email
+      );
+      const updatedThread = { ...thread, emails: updatedEmails };
+      this.dataSource.updateThread(updatedThread);
     }
-  }
-
-  removeFromSpam(threadIds: string[]): void {
-    threadIds.forEach((id) => {
-      this.dataSource.updateThread(id, { isSpam: false });
-    });
-  }
-
-  restoreFromTrash(threadIds: string[]): void {
-    threadIds.forEach((id) => {
-      this.dataSource.updateThread(id, { isTrashed: false });
-    });
   }
 }

@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { ChevronLeft, Archive, AlertTriangle, Trash2, Mail, MailOpen, Clock, CheckCircle, RotateCcw, X, Star, MoreVertical } from 'lucide-react';
-import type { ThreadGrouping } from '../../../data/models/email.model';
+import type { ThreadGrouping } from '../../../domain/models/email.model';
 import { useThreadDetailViewModel } from '../../viewmodels/thread-detail.viewmodel';
 
 export const ThreadDetailPage = () => {

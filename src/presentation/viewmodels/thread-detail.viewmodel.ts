@@ -1,5 +1,6 @@
 import { useEmailStore } from '../../domain/store/email.store';
-import type { ThreadGrouping } from '../../data/models/email.model';
+import type { ThreadGrouping } from '../../domain/models/email.model';
+import { BulkOperation } from '../../domain/enums/bulk-operation.enum';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,7 +21,7 @@ export const useThreadDetailViewModel = (threadId: string, grouping: ThreadGroup
 
   const availableOperations = emailUseCase.getAvailableOperations(grouping);
 
-  const handleOperation = (operation: string) => {
+  const handleOperation = (operation: BulkOperation) => {
     performBulkOperation(operation);
     navigate(`/${grouping}`);
   };

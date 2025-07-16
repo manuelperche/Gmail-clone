@@ -1,5 +1,5 @@
 import { Star } from 'lucide-react';
-import type { ThreadListItem } from '../../../data/models/email.model';
+import type { ThreadListItem } from '../../../domain/models/email.model';
 
 interface ThreadListItemProps {
   thread: ThreadListItem;
@@ -19,7 +19,7 @@ export const ThreadListItemComponent = ({
   return (
     <div 
       className={`flex items-center group hover:shadow-sm border-b border-[#f0f0f0] cursor-pointer transition-all ${
-        isSelected ? 'bg-[#fce8e6]' : thread.hasUnread ? 'bg-white' : 'bg-white'
+        isSelected ? 'bg-[#c2dbff]' : thread.hasUnread ? 'bg-white' : 'bg-white'
       } hover:shadow-md`}
       onClick={onClick}
     >
