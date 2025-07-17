@@ -6,6 +6,7 @@ interface ThreadListItemProps {
   isSelected: boolean;
   onToggleSelect: () => void;
   onClick: () => void;
+  onToggleStar: () => void;
   formatDate: (date: Date) => string;
 }
 
@@ -14,6 +15,7 @@ export const ThreadListItemComponent = ({
   isSelected, 
   onToggleSelect, 
   onClick,
+  onToggleStar,
   formatDate 
 }: ThreadListItemProps) => {
   return (
@@ -39,7 +41,7 @@ export const ThreadListItemComponent = ({
           className={`p-1 hover:bg-[#f1f3f4] rounded transition-colors ${thread.isStarred ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
           onClick={(e) => {
             e.stopPropagation();
-            // Handle star toggle
+            onToggleStar();
           }}
         >
           <Star 
@@ -53,24 +55,29 @@ export const ThreadListItemComponent = ({
         <div className="flex items-center justify-between">
           <div className="flex-1 mr-6 min-w-0">
             <div className="flex items-center text-sm">
-              <span className={`${thread.hasUnread ? 'font-medium text-[#202124]' : 'text-[#5f6368]'} truncate mr-2`}>
+              <span className={`${thread.hasUnread ? 'font-bold text-[#202124]' : 'text-[#5f6368]'} truncate mr-2`}>
                 {thread.senders.join(', ')}
               </span>
               {thread.emailCount > 1 && (
-                <span className="text-[#5f6368] text-xs">({thread.emailCount})</span>
+                <span className={`${thread.hasUnread ? 'font-bold text-[#202124]' : 'text-[#5f6368]'} text-xs`}>
+                  ({thread.emailCount})
+                </span>
               )}
             </div>
             <div className="flex items-baseline text-sm mt-0.5">
-              <span className={`${thread.hasUnread ? 'font-medium text-[#202124]' : 'text-[#5f6368]'} mr-2`}>
+              <span className={`${thread.hasUnread ? 'font-bold text-[#202124]' : 'text-[#5f6368]'} mr-2`}>
                 {thread.subject}
               </span>
-              <span className="text-[#5f6368] text-sm truncate">
+              <span className={`${thread.hasUnread ? 'font-bold text-[#202124]' : 'text-[#5f6368]'} text-sm truncate`}>
                 - {thread.snippet}
               </span>
             </div>
           </div>
           <div className="flex items-center">
-            <span className={`text-xs ${thread.hasUnread ? 'font-medium text-[#202124]' : 'text-[#5f6368]'} whitespace-nowrap`}>
+            {thread.hasUnread && (
+              <div className="w-2 h-2 bg-[#1a73e8] rounded-full mr-3"></div>
+            )}
+            <span className={`text-xs ${thread.hasUnread ? 'font-bold text-[#202124]' : 'text-[#5f6368]'} whitespace-nowrap`}>
               {formatDate(thread.lastActivityTimestamp)}
             </span>
           </div>

@@ -23,8 +23,10 @@ export const ThreadListPage = () => {
     loadThreads,
     handleSelectAll,
     toggleThreadSelection,
+    toggleThreadStar,
     performBulkOperation,
-    formatDate
+    formatDate,
+    selectByFilter
   } = useThreadListViewModel();
 
   useEffect(() => {
@@ -54,6 +56,7 @@ export const ThreadListPage = () => {
         isAllSelected={isAllSelected}
         isPartiallySelected={isPartiallySelected}
         onSelectAll={handleSelectAll}
+        onSelectByFilter={selectByFilter}
         totalThreads={threads.length}
       />
       
@@ -73,6 +76,7 @@ export const ThreadListPage = () => {
               isSelected={selectedThreadIds.has(thread.threadId)}
               onToggleSelect={() => toggleThreadSelection(thread.threadId)}
               onClick={() => handleThreadClick(thread.threadId)}
+              onToggleStar={() => toggleThreadStar(thread.threadId)}
               formatDate={formatDate}
             />
           ))

@@ -9,7 +9,7 @@ export const useThreadDetailViewModel = (threadId: string, grouping: ThreadGroup
     currentThread,
     loadThread,
     toggleEmailStar,
-    performBulkOperation,
+    performSingleThreadOperation,
     getAvailableOperations
   } = useEmailViewModel();
 
@@ -22,7 +22,8 @@ export const useThreadDetailViewModel = (threadId: string, grouping: ThreadGroup
   const availableOperations = getAvailableOperations();
 
   const handleOperation = (operation: BulkOperation) => {
-    performBulkOperation(operation);
+    console.log('handleOperation', operation, 'threadId:', threadId);
+    performSingleThreadOperation(threadId, operation);
     navigate(`/${grouping}`);
   };
 

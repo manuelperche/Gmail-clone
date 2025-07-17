@@ -17,9 +17,12 @@ interface EmailViewModelState {
   toggleThreadSelection: (threadId: string) => void;
   selectAllThreads: (select: boolean) => void;
   selectAllInPage: () => void;
+  selectByFilter: (filter: 'all' | 'none' | 'read' | 'unread' | 'starred' | 'unstarred') => void;
   performBulkOperation: (operation: BulkOperation) => void;
+  performSingleThreadOperation: (threadId: string, operation: BulkOperation) => void;
   loadThread: (threadId: string) => void;
   toggleEmailStar: (threadId: string, emailId: string) => void;
+  toggleThreadStar: (threadId: string) => void;
   clearSelection: () => void;
   
   // Computed properties
@@ -55,7 +58,6 @@ export const useEmailViewModel = create<EmailViewModelState>((set, get) => ({
     await new Promise(resolve => setTimeout(resolve, 200));
     
     const threads = emailUseCase.getThreadsByGrouping(get().currentGrouping);
-    console.log('Loaded threads:', threads.length, 'for grouping:', get().currentGrouping);
     set({ threads, isLoading: false });
   },
 
@@ -89,12 +91,49 @@ export const useEmailViewModel = create<EmailViewModelState>((set, get) => ({
     });
   },
 
+  selectByFilter: (filter) => {
+    set((state) => {
+      let filteredIds: string[] = [];
+      
+      switch (filter) {
+        case 'all':
+          filteredIds = state.threads.map(t => t.threadId);
+          break;
+        case 'none':
+          filteredIds = [];
+          break;
+        case 'read':
+          filteredIds = state.threads.filter(t => !t.hasUnread).map(t => t.threadId);
+          break;
+        case 'unread':
+          filteredIds = state.threads.filter(t => t.hasUnread).map(t => t.threadId);
+          break;
+        case 'starred':
+          filteredIds = state.threads.filter(t => t.isStarred).map(t => t.threadId);
+          break;
+        case 'unstarred':
+          filteredIds = state.threads.filter(t => !t.isStarred).map(t => t.threadId);
+          break;
+      }
+      
+      return { selectedThreadIds: new Set(filteredIds) };
+    });
+  },
+
   performBulkOperation: (operation) => {
+    console.log('performBulkOperation', operation);
     const { selectedThreadIds } = get();
     const threadIds = Array.from(selectedThreadIds);
     
     emailUseCase.performBulkOperation(threadIds, operation);
     set({ selectedThreadIds: new Set() });
+    // Fire-and-forget async reload
+    get().loadThreads();
+  },
+
+  performSingleThreadOperation: (threadId: string, operation: BulkOperation) => {
+    console.log('performSingleThreadOperation', threadId, operation);
+    emailUseCase.performBulkOperation([threadId], operation);
     // Fire-and-forget async reload
     get().loadThreads();
   },
@@ -114,6 +153,14 @@ export const useEmailViewModel = create<EmailViewModelState>((set, get) => ({
     if (thread) {
       set({ currentThread: thread });
       get().loadThreads();
+    }
+  },
+
+  toggleThreadStar: (threadId) => {
+    const thread = emailUseCase.getThread(threadId);
+    if (thread && thread.emails.length > 0) {
+      // Reuse the existing toggleEmailStar method
+      get().toggleEmailStar(threadId, thread.emails[0].id);
     }
   },
 
@@ -180,7 +227,9 @@ export const useThreadListViewModel = () => {
     loadThreads,
     toggleThreadSelection,
     selectAllThreads,
+    selectByFilter,
     performBulkOperation,
+    toggleThreadStar,
     clearSelection,
     getIsAllSelected,
     getIsPartiallySelected,
@@ -212,6 +261,8 @@ export const useThreadListViewModel = () => {
     loadThreads,
     handleSelectAll,
     toggleThreadSelection,
+    toggleThreadStar,
+    selectByFilter,
     performBulkOperation,
     formatDate
   };

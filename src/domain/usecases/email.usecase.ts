@@ -14,6 +14,7 @@ export class EmailUseCase {
   }
 
   performBulkOperation(threadIds: string[], operation: BulkOperation): void {
+    console.log('performBulkOperation', threadIds, operation);
     if (threadIds.length === 0) {
       return;
     }

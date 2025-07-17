@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { ChevronLeft, Archive, AlertTriangle, Trash2, Mail, MailOpen, Clock, CheckCircle, RotateCcw, X, Star, MoreVertical } from 'lucide-react';
 import type { ThreadGrouping } from '../../../domain/models/email.model';
 import { useThreadDetailViewModel } from '../../viewmodels/thread-detail.viewmodel';
+import { Tooltip } from '../components/Tooltip';
 
 export const ThreadDetailPage = () => {
   const { threadId, grouping } = useParams<{ threadId: string; grouping: ThreadGrouping }>();
@@ -49,26 +50,27 @@ export const ThreadDetailPage = () => {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex items-center h-12 px-6 border-b border-[#e8eaed]">
-        <button
-          onClick={goBack}
-          className="p-2 mr-4 hover:bg-[#f1f3f4] rounded-full transition-colors"
-          title="Back to list"
-        >
-          <ChevronLeft size={20} className="text-[#5f6368]" />
-        </button>
+        <Tooltip content="Back to list">
+          <button
+            onClick={goBack}
+            className="p-2 mr-4 hover:bg-[#f1f3f4] rounded-full transition-colors"
+          >
+            <ChevronLeft size={20} className="text-[#5f6368]" />
+          </button>
+        </Tooltip>
         
         <div className="flex items-center space-x-2">
           {availableOperations.map(op => {
             const IconComponent = getOperationIcon(op);
             return (
-              <button
-                key={op}
-                onClick={() => handleOperation(op)}
-                className="flex items-center p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors"
-                title={operationLabels[op] || op}
-              >
-                <IconComponent size={20} />
-              </button>
+              <Tooltip key={op} content={operationLabels[op] || op}>
+                <button
+                  onClick={() => handleOperation(op)}
+                  className="flex items-center p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors"
+                >
+                  <IconComponent size={20} />
+                </button>
+              </Tooltip>
             );
           })}
         </div>

@@ -1,5 +1,8 @@
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { BulkOperation } from '../../../domain/enums/bulk-operation.enum';
 import { getOperationIcon } from '../../../utils/operation-icons';
+import { Tooltip } from './Tooltip';
 
 interface BulkActionsProps {
   selectedCount: number;
@@ -8,6 +11,7 @@ interface BulkActionsProps {
   isAllSelected: boolean;
   isPartiallySelected: boolean;
   onSelectAll: () => void;
+  onSelectByFilter: (filter: 'all' | 'none' | 'read' | 'unread' | 'starred' | 'unstarred') => void;
   totalThreads: number;
 }
 
@@ -18,8 +22,21 @@ export const BulkActions = ({
   isAllSelected,
   isPartiallySelected,
   onSelectAll,
-  totalThreads
+  onSelectByFilter
 }: BulkActionsProps) => {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const operationLabels: Record<BulkOperation, string> = {
     [BulkOperation.ARCHIVE]: 'Archive',
     [BulkOperation.SPAM]: 'Report spam',
@@ -36,7 +53,7 @@ export const BulkActions = ({
 
   return (
     <div className="flex items-center h-12 px-6 bg-white border-b border-[#e8eaed]">
-      <div className="flex items-center">
+      <div className="flex items-center relative" ref={dropdownRef}>
         <input
           type="checkbox"
           checked={isAllSelected}
@@ -49,20 +66,70 @@ export const BulkActions = ({
           className="w-4 h-4 text-blue-600 rounded-sm"
           style={{ accentColor: '#1a73e8' }}
         />
-        {selectedCount > 0 && (
-          <div className="ml-2 relative">
-            <select 
-              className="appearance-none bg-transparent pr-4 text-sm focus:outline-none cursor-pointer hover:bg-[#f1f3f4] rounded px-2 py-1 text-[#5f6368]"
-              onChange={(e) => {
-                if (e.target.value === 'all') {
-                  onSelectAll();
-                }
-                e.target.value = '';
+        <button
+          onClick={() => setShowDropdown(!showDropdown)}
+          className="ml-1 p-1 hover:bg-[#f1f3f4] rounded transition-colors"
+        >
+          <ChevronDown size={16} className="text-[#5f6368]" />
+        </button>
+        
+        {showDropdown && (
+          <div className="absolute top-full left-0 mt-1 bg-white rounded-md shadow-lg border border-[#e8eaed] py-1 z-50 min-w-[140px]">
+            <button
+              onClick={() => {
+                onSelectByFilter('all');
+                setShowDropdown(false);
               }}
+              className="w-full text-left px-4 py-2 text-sm text-[#202124] hover:bg-[#f1f3f4]"
             >
-              <option value="">▼</option>
-              <option value="all">All {totalThreads}</option>
-            </select>
+              All
+            </button>
+            <button
+              onClick={() => {
+                onSelectByFilter('none');
+                setShowDropdown(false);
+              }}
+              className="w-full text-left px-4 py-2 text-sm text-[#202124] hover:bg-[#f1f3f4]"
+            >
+              None
+            </button>
+            <div className="border-t border-[#e8eaed] my-1"></div>
+            <button
+              onClick={() => {
+                onSelectByFilter('read');
+                setShowDropdown(false);
+              }}
+              className="w-full text-left px-4 py-2 text-sm text-[#202124] hover:bg-[#f1f3f4]"
+            >
+              Read
+            </button>
+            <button
+              onClick={() => {
+                onSelectByFilter('unread');
+                setShowDropdown(false);
+              }}
+              className="w-full text-left px-4 py-2 text-sm text-[#202124] hover:bg-[#f1f3f4]"
+            >
+              Unread
+            </button>
+            <button
+              onClick={() => {
+                onSelectByFilter('starred');
+                setShowDropdown(false);
+              }}
+              className="w-full text-left px-4 py-2 text-sm text-[#202124] hover:bg-[#f1f3f4]"
+            >
+              Starred
+            </button>
+            <button
+              onClick={() => {
+                onSelectByFilter('unstarred');
+                setShowDropdown(false);
+              }}
+              className="w-full text-left px-4 py-2 text-sm text-[#202124] hover:bg-[#f1f3f4]"
+            >
+              Unstarred
+            </button>
           </div>
         )}
       </div>
@@ -72,14 +139,14 @@ export const BulkActions = ({
           {operations.map(op => {
             const IconComponent = getOperationIcon(op);
             return (
-              <button
-                key={op}
-                onClick={() => onOperation(op)}
-                className="flex items-center p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors"
-                title={operationLabels[op] || op}
-              >
-                <IconComponent size={20} />
-              </button>
+              <Tooltip key={op} content={operationLabels[op] || op}>
+                <button
+                  onClick={() => onOperation(op)}
+                  className="flex items-center p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors"
+                >
+                  <IconComponent size={20} />
+                </button>
+              </Tooltip>
             );
           })}
         </div>
