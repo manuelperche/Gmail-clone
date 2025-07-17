@@ -1,5 +1,6 @@
 export const BulkOperation = {
   ARCHIVE: 'archive',
+  UNARCHIVE: 'unarchive',
   SPAM: 'spam',
   TRASH: 'trash',
   MARK_AS_READ: 'markAsRead',

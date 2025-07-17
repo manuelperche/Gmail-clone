@@ -1,5 +1,6 @@
 import {
   Archive,
+  ArchiveRestore,
   AlertTriangle,
   Trash2,
   MailCheck,
@@ -14,6 +15,7 @@ import { BulkOperation } from "../domain/enums/bulk-operation.enum";
 
 export const OPERATION_ICONS: Record<BulkOperation, LucideIcon> = {
   [BulkOperation.ARCHIVE]: Archive,
+  [BulkOperation.UNARCHIVE]: ArchiveRestore,
   [BulkOperation.SPAM]: AlertTriangle,
   [BulkOperation.TRASH]: Trash2,
   [BulkOperation.MARK_AS_READ]: MailCheck,

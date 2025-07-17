@@ -39,6 +39,7 @@ export const BulkActions = ({
 
   const operationLabels: Record<BulkOperation, string> = {
     [BulkOperation.ARCHIVE]: 'Archive',
+    [BulkOperation.UNARCHIVE]: 'Move to Inbox',
     [BulkOperation.SPAM]: 'Report spam',
     [BulkOperation.TRASH]: 'Delete',
     [BulkOperation.MARK_AS_READ]: 'Mark as read',

@@ -14,7 +14,6 @@ export class EmailUseCase {
   }
 
   performBulkOperation(threadIds: string[], operation: BulkOperation): void {
-    console.log('performBulkOperation', threadIds, operation);
     if (threadIds.length === 0) {
       return;
     }
@@ -22,6 +21,9 @@ export class EmailUseCase {
     switch (operation) {
       case BulkOperation.ARCHIVE:
         this.emailService.archiveThreads(threadIds);
+        break;
+      case BulkOperation.UNARCHIVE:
+        this.emailService.unarchiveThreads(threadIds);
         break;
       case BulkOperation.SPAM:
         this.emailService.markThreadsAsSpam(threadIds);
@@ -97,7 +99,7 @@ export class EmailUseCase {
       case 'drafts':
         return [BulkOperation.TRASH];
       case 'all':
-        return [BulkOperation.ARCHIVE, BulkOperation.SPAM, BulkOperation.TRASH, ...baseOperations, BulkOperation.SNOOZE];
+        return [BulkOperation.ARCHIVE, BulkOperation.UNARCHIVE, BulkOperation.SPAM, BulkOperation.TRASH, ...baseOperations, BulkOperation.SNOOZE];
       case 'spam':
         return [BulkOperation.NOT_SPAM, BulkOperation.DELETE_FOREVER];
       case 'trash':

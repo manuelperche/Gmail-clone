@@ -101,6 +101,15 @@ export class EmailService {
     });
   }
 
+  unarchiveThreads(threadIds: string[]): void {
+    threadIds.forEach((id) => {
+      const thread = this.getThread(id);
+      if (thread) {
+        this.updateThread({ ...thread, isArchived: false });
+      }
+    });
+  }
+
   markThreadsAsSpam(threadIds: string[]): void {
     threadIds.forEach((id) => {
       const thread = this.getThread(id);
@@ -138,9 +147,9 @@ export class EmailService {
   }
 
   deleteThreadsForever(threadIds: string[]): void {
-    // In a real implementation, this would actually delete the threads
-    // For now, we'll just mark them as deleted (same as trash)
-    this.trashThreads(threadIds);
+    threadIds.forEach((id) => {
+      this.emailStore.deleteThread(id);
+    });
   }
 
   markThreadsAsRead(threadIds: string[]): void {
