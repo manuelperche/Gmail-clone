@@ -1,16 +1,10 @@
 import type { Email, Thread } from "../../domain/models/email.model";
-import type { ITimeService } from "../../domain/interfaces/time-service.interface";
+import { getFrozenTime } from "../../utils/time";
 
 export class MockDataGenerator {
-  private readonly timeService: ITimeService;
-
-  constructor(timeService: ITimeService) {
-    this.timeService = timeService;
-  }
-
   generateMockThreads(): Thread[] {
     const threads: Thread[] = [];
-    const baseTime = this.timeService.getFrozenTime();
+    const baseTime = getFrozenTime();
 
     // Generate regular email threads
     for (let i = 1; i <= 30; i++) {

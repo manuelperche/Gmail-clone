@@ -1,20 +1,35 @@
-import type { IEmailDataSource } from "../../domain/interfaces/email-datasource.interface";
-import type { IEmailRepository } from "../../domain/interfaces/email-repository.interface";
-import type {
-  Thread,
-  ThreadGrouping,
-  ThreadListItem,
-} from "../../domain/models/email.model";
+import type { Thread, ThreadGrouping, ThreadListItem } from '../../domain/models/email.model';
+import { MockDataGenerator } from '../generators/mock-data.generator';
+import { InMemoryEmailStore } from '../stores/in-memory-email.store';
 
-export class EmailRepository implements IEmailRepository {
-  private dataSource: IEmailDataSource;
+export class EmailService {
+  private emailStore: InMemoryEmailStore;
+  private currentUser = { name: 'John Doe', email: 'john.doe@company.com' };
 
-  constructor(dataSource: IEmailDataSource) {
-    this.dataSource = dataSource;
+  constructor() {
+    const generator = new MockDataGenerator();
+    const mockThreads = generator.generateMockThreads();
+    this.emailStore = new InMemoryEmailStore(mockThreads);
+  }
+
+  getAllThreads(): Thread[] {
+    return this.emailStore.getAllThreads();
+  }
+
+  getThread(threadId: string): Thread | undefined {
+    return this.emailStore.getThread(threadId);
+  }
+
+  updateThread(thread: Thread): void {
+    this.emailStore.updateThread(thread);
+  }
+
+  getCurrentUser(): string {
+    return this.currentUser.email;
   }
 
   getThreadsByGrouping(grouping: ThreadGrouping): ThreadListItem[] {
-    const allThreads = this.dataSource.getAllThreads();
+    const allThreads = this.getAllThreads();
 
     const filteredThreads = allThreads.filter((thread) => {
       switch (grouping) {
@@ -77,56 +92,47 @@ export class EmailRepository implements IEmailRepository {
       );
   }
 
-  getThread(threadId: string): Thread | undefined {
-    return this.dataSource.getThread(threadId);
-  }
-
   archiveThreads(threadIds: string[]): void {
     threadIds.forEach((id) => {
-      const thread = this.dataSource.getThread(id);
+      const thread = this.getThread(id);
       if (thread) {
-        const updatedThread = { ...thread, isArchived: true };
-        this.dataSource.updateThread(updatedThread);
+        this.updateThread({ ...thread, isArchived: true });
       }
     });
   }
 
   markThreadsAsSpam(threadIds: string[]): void {
     threadIds.forEach((id) => {
-      const thread = this.dataSource.getThread(id);
+      const thread = this.getThread(id);
       if (thread) {
-        const updatedThread = { ...thread, isSpam: true };
-        this.dataSource.updateThread(updatedThread);
+        this.updateThread({ ...thread, isSpam: true });
       }
     });
   }
 
   markThreadsAsNotSpam(threadIds: string[]): void {
     threadIds.forEach((id) => {
-      const thread = this.dataSource.getThread(id);
+      const thread = this.getThread(id);
       if (thread) {
-        const updatedThread = { ...thread, isSpam: false };
-        this.dataSource.updateThread(updatedThread);
+        this.updateThread({ ...thread, isSpam: false });
       }
     });
   }
 
   trashThreads(threadIds: string[]): void {
     threadIds.forEach((id) => {
-      const thread = this.dataSource.getThread(id);
+      const thread = this.getThread(id);
       if (thread) {
-        const updatedThread = { ...thread, isTrashed: true };
-        this.dataSource.updateThread(updatedThread);
+        this.updateThread({ ...thread, isTrashed: true });
       }
     });
   }
 
   restoreThreads(threadIds: string[]): void {
     threadIds.forEach((id) => {
-      const thread = this.dataSource.getThread(id);
+      const thread = this.getThread(id);
       if (thread) {
-        const updatedThread = { ...thread, isTrashed: false };
-        this.dataSource.updateThread(updatedThread);
+        this.updateThread({ ...thread, isTrashed: false });
       }
     });
   }
@@ -139,28 +145,26 @@ export class EmailRepository implements IEmailRepository {
 
   markThreadsAsRead(threadIds: string[]): void {
     threadIds.forEach((id) => {
-      const thread = this.dataSource.getThread(id);
+      const thread = this.getThread(id);
       if (thread) {
         const updatedEmails = thread.emails.map((email) => ({
           ...email,
           isRead: email.isSent ? email.isRead : true,
         }));
-        const updatedThread = { ...thread, emails: updatedEmails };
-        this.dataSource.updateThread(updatedThread);
+        this.updateThread({ ...thread, emails: updatedEmails });
       }
     });
   }
 
   markThreadsAsUnread(threadIds: string[]): void {
     threadIds.forEach((id) => {
-      const thread = this.dataSource.getThread(id);
+      const thread = this.getThread(id);
       if (thread) {
         const updatedEmails = thread.emails.map((email) => ({
           ...email,
           isRead: email.isSent ? email.isRead : false,
         }));
-        const updatedThread = { ...thread, emails: updatedEmails };
-        this.dataSource.updateThread(updatedThread);
+        this.updateThread({ ...thread, emails: updatedEmails });
       }
     });
   }
@@ -172,42 +176,42 @@ export class EmailRepository implements IEmailRepository {
   snoozeThreads(threadIds: string[]): void {
     const snoozedUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     threadIds.forEach((id) => {
-      const thread = this.dataSource.getThread(id);
+      const thread = this.getThread(id);
       if (thread) {
-        const updatedThread = {
+        this.updateThread({
           ...thread,
           isSnoozed: true,
           snoozedUntil,
-        };
-        this.dataSource.updateThread(updatedThread);
+        });
       }
     });
   }
 
   unsnoozeThreads(threadIds: string[]): void {
     threadIds.forEach((id) => {
-      const thread = this.dataSource.getThread(id);
+      const thread = this.getThread(id);
       if (thread) {
-        const updatedThread = {
+        this.updateThread({
           ...thread,
           isSnoozed: false,
           snoozedUntil: undefined,
-        };
-        this.dataSource.updateThread(updatedThread);
+        });
       }
     });
   }
 
   toggleEmailStar(threadId: string, emailId: string): void {
-    const thread = this.dataSource.getThread(threadId);
+    const thread = this.getThread(threadId);
     if (thread) {
       const updatedEmails = thread.emails.map((email) =>
         email.id === emailId
           ? { ...email, isStarred: !email.isStarred }
           : email
       );
-      const updatedThread = { ...thread, emails: updatedEmails };
-      this.dataSource.updateThread(updatedThread);
+      this.updateThread({ ...thread, emails: updatedEmails });
     }
   }
 }
+
+// Export singleton instance
+export const emailService = new EmailService();

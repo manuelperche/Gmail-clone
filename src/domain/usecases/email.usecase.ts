@@ -1,19 +1,16 @@
 import type { Thread, ThreadGrouping, ThreadListItem } from '../models/email.model';
-import type { IEmailRepository } from '../interfaces/email-repository.interface';
 import { BulkOperation } from '../enums/bulk-operation.enum';
+import { emailService } from '../../data/services/email.service';
 
 export class EmailUseCase {
-  private repository: IEmailRepository;
-  constructor(repository: IEmailRepository) {
-    this.repository = repository;
-  }
+  private emailService = emailService;
 
   getThreadsByGrouping(grouping: ThreadGrouping): ThreadListItem[] {
-    return this.repository.getThreadsByGrouping(grouping);
+    return this.emailService.getThreadsByGrouping(grouping);
   }
 
   getThread(threadId: string): Thread | undefined {
-    return this.repository.getThread(threadId);
+    return this.emailService.getThread(threadId);
   }
 
   performBulkOperation(threadIds: string[], operation: BulkOperation): void {
@@ -23,44 +20,44 @@ export class EmailUseCase {
 
     switch (operation) {
       case BulkOperation.ARCHIVE:
-        this.repository.archiveThreads(threadIds);
+        this.emailService.archiveThreads(threadIds);
         break;
       case BulkOperation.SPAM:
-        this.repository.markThreadsAsSpam(threadIds);
+        this.emailService.markThreadsAsSpam(threadIds);
         break;
       case BulkOperation.TRASH:
-        this.repository.trashThreads(threadIds);
+        this.emailService.trashThreads(threadIds);
         break;
       case BulkOperation.MARK_AS_READ:
-        this.repository.markThreadsAsRead(threadIds);
+        this.emailService.markThreadsAsRead(threadIds);
         break;
       case BulkOperation.MARK_AS_UNREAD:
-        this.repository.markThreadsAsUnread(threadIds);
+        this.emailService.markThreadsAsUnread(threadIds);
         break;
       case BulkOperation.SNOOZE:
-        this.repository.snoozeThreads(threadIds);
+        this.emailService.snoozeThreads(threadIds);
         break;
       case BulkOperation.NOT_SPAM:
-        this.repository.markThreadsAsNotSpam(threadIds);
+        this.emailService.markThreadsAsNotSpam(threadIds);
         break;
       case BulkOperation.RESTORE:
-        this.repository.restoreThreads(threadIds);
+        this.emailService.restoreThreads(threadIds);
         break;
       case BulkOperation.DELETE_FOREVER:
-        this.repository.deleteThreadsForever(threadIds);
+        this.emailService.deleteThreadsForever(threadIds);
         break;
       case BulkOperation.UNSNOOZE:
-        this.repository.unsnoozeThreads(threadIds);
+        this.emailService.unsnoozeThreads(threadIds);
         break;
     }
   }
 
   toggleEmailStar(threadId: string, emailId: string): void {
-    this.repository.toggleEmailStar(threadId, emailId);
+    this.emailService.toggleEmailStar(threadId, emailId);
   }
 
   markThreadAsRead(threadId: string): void {
-    this.repository.markThreadAsRead(threadId);
+    this.emailService.markThreadAsRead(threadId);
   }
 
   getAvailableOperations(grouping: ThreadGrouping): BulkOperation[] {
@@ -88,3 +85,6 @@ export class EmailUseCase {
     }
   }
 }
+
+// Export singleton instance
+export const emailUseCase = new EmailUseCase();

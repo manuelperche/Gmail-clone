@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import type { ThreadGrouping } from '../../../domain/models/email.model';
-import { useThreadListViewModel } from '../../viewmodels/thread-list.viewmodel';
+import { useThreadListViewModel } from '../../viewmodels/email.viewmodel';
 import { ThreadListItemComponent } from '../components/ThreadListItem';
 import { BulkActions } from '../components/BulkActions';
 import { PageHeader } from '../components/PageHeader';
@@ -17,11 +18,26 @@ export const ThreadListPage = () => {
     isPartiallySelected,
     availableOperations,
     isLoading,
+    currentGrouping,
+    setGrouping,
+    loadThreads,
     handleSelectAll,
     toggleThreadSelection,
     performBulkOperation,
     formatDate
-  } = useThreadListViewModel(grouping as ThreadGrouping);
+  } = useThreadListViewModel();
+
+  useEffect(() => {
+    if (grouping && currentGrouping !== grouping) {
+      setGrouping(grouping as ThreadGrouping);
+    }
+  }, [grouping, currentGrouping, setGrouping]);
+
+  useEffect(() => {
+    if (grouping && currentGrouping === grouping) {
+      loadThreads();
+    }
+  }, [grouping, currentGrouping, loadThreads]);
 
   const handleThreadClick = (threadId: string) => {
     navigate(`/${grouping}/thread/${threadId}`);

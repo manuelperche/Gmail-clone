@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import type { ThreadGrouping } from "../../domain/models/email.model";
-import { useEmailStore } from "../../domain/store/email.store";
+import { useEmailViewModel } from "./email.viewmodel";
+import { emailUseCase } from "../../domain/usecases/email.usecase";
 
 const groupings: ThreadGrouping[] = [
   "inbox",
@@ -15,7 +16,7 @@ const groupings: ThreadGrouping[] = [
 
 export const useSidebarViewModel = () => {
   const [groupingCounts, setGroupingCounts] = useState<Record<ThreadGrouping, number>>({} as Record<ThreadGrouping, number>);
-  const { emailUseCase, threads } = useEmailStore();
+  const { threads } = useEmailViewModel();
 
   const updateCounts = useCallback(() => {
     const counts: Record<ThreadGrouping, number> = {} as Record<ThreadGrouping, number>;
@@ -24,7 +25,7 @@ export const useSidebarViewModel = () => {
       counts[grouping] = threadsForGrouping.length;
     });
     setGroupingCounts(counts);
-  }, [emailUseCase]);
+  }, []);
 
   useEffect(() => {
     updateCounts();

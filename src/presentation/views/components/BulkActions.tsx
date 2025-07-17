@@ -1,5 +1,5 @@
 import { BulkOperation } from '../../../domain/enums/bulk-operation.enum';
-import { IconService } from '../../../domain/services/icon.service';
+import { getOperationIcon } from '../../../utils/operation-icons';
 
 interface BulkActionsProps {
   selectedCount: number;
@@ -70,7 +70,7 @@ export const BulkActions = ({
       {selectedCount > 0 && (
         <div className="flex items-center ml-6 space-x-2">
           {operations.map(op => {
-            const IconComponent = IconService.getOperationIcon(op);
+            const IconComponent = getOperationIcon(op);
             return (
               <button
                 key={op}
