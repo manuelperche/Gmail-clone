@@ -61,6 +61,27 @@ export class EmailUseCase {
     this.emailService.markThreadAsRead(threadId);
   }
 
+  toggleThreadStar(threadId: string): void {
+    const thread = this.emailService.getThread(threadId);
+    if (thread && thread.emails.length > 0) {
+      // Check if thread is currently starred (any email is starred)
+      const isCurrentlyStarred = thread.emails.some(e => e.isStarred);
+      
+      // If currently starred, unstar all emails; if not starred, star the first email
+      if (isCurrentlyStarred) {
+        // Unstar all emails in the thread
+        thread.emails.forEach(email => {
+          if (email.isStarred) {
+            this.emailService.toggleEmailStar(threadId, email.id);
+          }
+        });
+      } else {
+        // Star the first email
+        this.emailService.toggleEmailStar(threadId, thread.emails[0].id);
+      }
+    }
+  }
+
   getAvailableOperations(grouping: ThreadGrouping): BulkOperation[] {
     const baseOperations = [BulkOperation.MARK_AS_READ, BulkOperation.MARK_AS_UNREAD];
     

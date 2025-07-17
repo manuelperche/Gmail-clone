@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import type { ThreadGrouping } from '../../../domain/models/email.model';
-import { useThreadListViewModel } from '../../viewmodels/email.viewmodel';
+import { useThreadListViewModel } from '../../viewmodels/thread-list.viewmodel';
 import { ThreadListItemComponent } from '../components/ThreadListItem';
 import { BulkActions } from '../components/BulkActions';
 import { PageHeader } from '../components/PageHeader';

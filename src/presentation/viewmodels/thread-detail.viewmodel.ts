@@ -1,4 +1,5 @@
 import { useEmailViewModel } from './email.viewmodel';
+import { useEmailOperations } from './email-operations.viewmodel';
 import type { ThreadGrouping } from '../../domain/models/email.model';
 import { BulkOperation } from '../../domain/enums/bulk-operation.enum';
 import { useEffect } from 'react';
@@ -7,19 +8,20 @@ import { useNavigate } from 'react-router-dom';
 export const useThreadDetailViewModel = (threadId: string, grouping: ThreadGrouping) => {
   const {
     currentThread,
-    loadThread,
-    toggleEmailStar,
-    performSingleThreadOperation,
-    getAvailableOperations
+    loadThread
   } = useEmailViewModel();
+
+  const {
+    availableOperations,
+    performSingleThreadOperation,
+    toggleEmailStar
+  } = useEmailOperations();
 
   const navigate = useNavigate();
 
   useEffect(() => {
     loadThread(threadId);
   }, [threadId, loadThread]);
-
-  const availableOperations = getAvailableOperations();
 
   const handleOperation = (operation: BulkOperation) => {
     console.log('handleOperation', operation, 'threadId:', threadId);

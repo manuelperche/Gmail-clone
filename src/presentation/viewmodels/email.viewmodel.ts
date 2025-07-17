@@ -14,6 +14,7 @@ interface EmailViewModelState {
   // Actions
   setGrouping: (grouping: ThreadGrouping) => void;
   loadThreads: () => Promise<void>;
+  refreshThreads: () => void;
   toggleThreadSelection: (threadId: string) => void;
   selectAllThreads: (select: boolean) => void;
   selectAllInPage: () => void;
@@ -29,7 +30,6 @@ interface EmailViewModelState {
   getIsAllSelected: () => boolean;
   getIsPartiallySelected: () => boolean;
   getAvailableOperations: () => BulkOperation[];
-  formatDate: (date: Date) => string;
 }
 
 export const useEmailViewModel = create<EmailViewModelState>((set, get) => ({
@@ -38,7 +38,7 @@ export const useEmailViewModel = create<EmailViewModelState>((set, get) => ({
   threads: [],
   selectedThreadIds: new Set(),
   currentThread: null,
-  isLoading: true,
+  isLoading: false,
 
   // Actions
   setGrouping: (grouping) => {
@@ -59,6 +59,12 @@ export const useEmailViewModel = create<EmailViewModelState>((set, get) => ({
     
     const threads = emailUseCase.getThreadsByGrouping(get().currentGrouping);
     set({ threads, isLoading: false });
+  },
+
+  refreshThreads: () => {
+    // Refresh threads without loading state
+    const threads = emailUseCase.getThreadsByGrouping(get().currentGrouping);
+    set({ threads });
   },
 
   toggleThreadSelection: (threadId) => {
@@ -127,15 +133,15 @@ export const useEmailViewModel = create<EmailViewModelState>((set, get) => ({
     
     emailUseCase.performBulkOperation(threadIds, operation);
     set({ selectedThreadIds: new Set() });
-    // Fire-and-forget async reload
-    get().loadThreads();
+    // Refresh without loading state
+    get().refreshThreads();
   },
 
   performSingleThreadOperation: (threadId: string, operation: BulkOperation) => {
     console.log('performSingleThreadOperation', threadId, operation);
     emailUseCase.performBulkOperation([threadId], operation);
-    // Fire-and-forget async reload
-    get().loadThreads();
+    // Refresh without loading state
+    get().refreshThreads();
   },
 
   loadThread: (threadId) => {
@@ -143,7 +149,7 @@ export const useEmailViewModel = create<EmailViewModelState>((set, get) => ({
     if (thread) {
       emailUseCase.markThreadAsRead(threadId);
       set({ currentThread: thread });
-      get().loadThreads();
+      get().refreshThreads();
     }
   },
 
@@ -152,16 +158,13 @@ export const useEmailViewModel = create<EmailViewModelState>((set, get) => ({
     const thread = emailUseCase.getThread(threadId);
     if (thread) {
       set({ currentThread: thread });
-      get().loadThreads();
+      get().refreshThreads();
     }
   },
 
   toggleThreadStar: (threadId) => {
-    const thread = emailUseCase.getThread(threadId);
-    if (thread && thread.emails.length > 0) {
-      // Reuse the existing toggleEmailStar method
-      get().toggleEmailStar(threadId, thread.emails[0].id);
-    }
+    emailUseCase.toggleThreadStar(threadId);
+    get().refreshThreads();
   },
 
   clearSelection: () => {
@@ -185,85 +188,11 @@ export const useEmailViewModel = create<EmailViewModelState>((set, get) => ({
   getAvailableOperations: () => {
     const { currentGrouping } = get();
     return emailUseCase.getAvailableOperations(currentGrouping);
-  },
-
-  formatDate: (date: Date) => {
-    const frozenTime = new Date('2030-03-14T15:14:00');
-    const diff = frozenTime.getTime() - date.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
-    if (days === 0) {
-      return date.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit',
-        hour12: true 
-      });
-    } else if (days === 1) {
-      return 'Yesterday';
-    } else if (days < 7) {
-      return date.toLocaleDateString('en-US', { weekday: 'short' });
-    } else {
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
-      });
-    }
   }
 }));
 
 // Initialize with inbox data on app start
 setTimeout(() => {
-  useEmailViewModel.getState().loadThreads();
+  useEmailViewModel.getState().refreshThreads();
 }, 0);
 
-// Hook for thread list functionality
-export const useThreadListViewModel = () => {
-  const {
-    threads,
-    selectedThreadIds,
-    currentGrouping,
-    isLoading,
-    setGrouping,
-    loadThreads,
-    toggleThreadSelection,
-    selectAllThreads,
-    selectByFilter,
-    performBulkOperation,
-    toggleThreadStar,
-    clearSelection,
-    getIsAllSelected,
-    getIsPartiallySelected,
-    getAvailableOperations,
-    formatDate
-  } = useEmailViewModel();
-
-  const isAllSelected = getIsAllSelected();
-  const isPartiallySelected = getIsPartiallySelected();
-  const availableOperations = getAvailableOperations();
-
-  const handleSelectAll = () => {
-    if (isAllSelected) {
-      clearSelection();
-    } else {
-      selectAllThreads(true);
-    }
-  };
-
-  return {
-    threads,
-    selectedThreadIds,
-    isAllSelected,
-    isPartiallySelected,
-    availableOperations,
-    isLoading,
-    currentGrouping,
-    setGrouping,
-    loadThreads,
-    handleSelectAll,
-    toggleThreadSelection,
-    toggleThreadStar,
-    selectByFilter,
-    performBulkOperation,
-    formatDate
-  };
-};
