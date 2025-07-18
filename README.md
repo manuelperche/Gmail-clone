@@ -17,6 +17,8 @@
 
 <img width="2976" height="1256" alt="image" src="https://github.com/user-attachments/assets/572dfd05-b825-4457-9362-c31f8796ecf3" />
 
+<img width="1728" height="792" alt="image" src="https://github.com/user-attachments/assets/f1f3b5a9-d860-422a-8fd3-c3b6d7956b26" />
+
 
 ## To run this project:
 
