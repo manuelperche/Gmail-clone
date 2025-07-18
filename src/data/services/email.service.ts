@@ -73,6 +73,7 @@ export class EmailService {
     return filteredThreads
       .map((thread) => {
         const latestEmail = thread.emails[thread.emails.length - 1];
+        const firstEmail = thread.emails[0];
         const senders = [
           ...new Set(
             thread.emails
@@ -84,7 +85,7 @@ export class EmailService {
 
         return {
           threadId: thread.id,
-          subject: latestEmail.subject,
+          subject: firstEmail.subject,
           snippet: latestEmail.body.substring(0, 100) + "...",
           senders: senders.length > 0 ? senders : [latestEmail.from.name],
           hasUnread,

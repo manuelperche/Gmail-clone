@@ -3,6 +3,7 @@ import { ChevronLeft, Archive, AlertTriangle, Trash2, Mail, MailOpen, Clock, Che
 import type { ThreadGrouping } from '../../../domain/models/email.model';
 import { useThreadDetailViewModel } from '../../viewmodels/thread-detail.viewmodel';
 import { Tooltip } from '../components/Tooltip';
+import { formatGmailStyle } from '../../../utils/date';
 
 export const ThreadDetailPage = () => {
   const { threadId, grouping } = useParams<{ threadId: string; grouping: ThreadGrouping }>();
@@ -12,7 +13,6 @@ export const ThreadDetailPage = () => {
     availableOperations,
     handleOperation,
     toggleEmailStar,
-    formatDateTime,
     goBack
   } = useThreadDetailViewModel(threadId!, grouping as ThreadGrouping);
 
@@ -115,7 +115,7 @@ export const ThreadDetailPage = () => {
                   </div>
                   <div className="flex items-center space-x-3">
                     <span className="text-sm text-[#5f6368]">
-                      {formatDateTime(email.timestamp)}
+                      {formatGmailStyle(email.timestamp)}
                     </span>
                     <button
                       onClick={() => toggleEmailStar(thread.id, email.id)}
