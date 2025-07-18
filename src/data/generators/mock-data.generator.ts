@@ -40,7 +40,7 @@ export class MockDataGenerator {
       threads.push({
         id: threadId,
         emails,
-        isArchived: false,
+        isArchived: Math.random() > 0.9, // 10% of regular emails are archived
         isSpam: false,
         isTrashed: false,
         isSnoozed: false,
@@ -152,6 +152,57 @@ export class MockDataGenerator {
       });
     }
 
+    // Generate sent emails and threads
+    for (let i = 1; i <= 10; i++) {
+      const threadId = `sent-${i}`;
+      const emailCount = Math.floor(Math.random() * 3) + 1; // 1-3 emails per thread
+      const emails: Email[] = [];
+
+      for (let j = 1; j <= emailCount; j++) {
+        const emailId = `sent-email-${i}-${j}`;
+        const timestamp = new Date(baseTime.getTime() - (i * 45 * 60 * 1000) - (j * 10 * 60 * 1000));
+        
+        // Alternate between sent and received emails in conversation
+        const isSentEmail = j % 2 === 1; // First, third, etc. are sent by you
+        
+        emails.push({
+          id: emailId,
+          threadId,
+          from: isSentEmail ? {
+            name: "You",
+            email: "you@example.com",
+          } : {
+            name: this.getRandomName(),
+            email: this.getRandomEmail(),
+          },
+          to: isSentEmail ? [{
+            name: this.getRandomName(),
+            email: this.getRandomEmail(),
+          }] : [{
+            name: "You", 
+            email: "you@example.com",
+          }],
+          subject: `Re: ${this.getRandomSubject()}`,
+          body: isSentEmail ? this.getRandomSentBody() : this.getRandomBody(),
+          timestamp,
+          isStarred: Math.random() > 0.9,
+          isRead: true, // Sent emails are always "read"
+          isDraft: false,
+          isSent: isSentEmail,
+        });
+      }
+
+      threads.push({
+        id: threadId,
+        emails,
+        isArchived: Math.random() > 0.9, // 10% of sent emails are archived
+        isSpam: false,
+        isTrashed: false,
+        isSnoozed: false,
+        lastActivityTimestamp: emails[emails.length - 1].timestamp,
+      });
+    }
+
     return threads;
   }
 
@@ -195,5 +246,17 @@ export class MockDataGenerator {
       "Hi,\n\nThis is an important message that requires your immediate attention...",
     ];
     return bodies[Math.floor(Math.random() * bodies.length)];
+  }
+
+  private getRandomSentBody(): string {
+    const sentBodies = [
+      "Hi,\n\nThanks for your email. I wanted to follow up on what we discussed...",
+      "Hello,\n\nI'm reaching out to share some updates on the project we've been working on...",
+      "Good afternoon,\n\nI hope you're doing well. I wanted to check in about...",
+      "Hi there,\n\nThanks for getting back to me so quickly. Regarding your question...",
+      "Hello,\n\nI'm writing to confirm our meeting for next week. Please let me know if...",
+      "Hi,\n\nI wanted to share the document we discussed. Please review it and let me know...",
+    ];
+    return sentBodies[Math.floor(Math.random() * sentBodies.length)];
   }
 }
