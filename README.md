@@ -1,69 +1,31 @@
-# React + TypeScript + Vite
+# Gmail Clone
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Project Overview
 
-Currently, two official plugins are available:
+  This is a heavily scoped-down Gmail clone built with React and TypeScript, implementing core email management functionality with Gmail-like behavior. The project emphasizes clean architecture, proper separation
+  of concerns, and exact replication of Gmail's operational behavior.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+  Key Features
 
-## Expanding the ESLint configuration
+  - 8 Thread Groupings: Inbox, Starred, Snoozed, Sent, Drafts, All Mail, Spam, Trash
+  - Bulk Operations: Archive/Unarchive, Mark as Spam/Not Spam, Trash/Restore, Mark Read/Unread, Snooze/Unsnooze, Delete Forever
+  - Smart Selection: Gmail-style checkbox dropdown with filters (All, None, Read, Unread, Starred, Unstarred)
+  - Thread Detail View: Full conversation view with individual email starring and operations
+  - Real Gmail Behavior: Operations behave exactly as they do in Gmail, including contextual availability
+  - Dataset: Realistic mock data with various email types and states
+  - Frozen Time: Always operates as if it's March 14, 2030 @ 3:14 PM
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+<img width="2976" height="1256" alt="image" src="https://github.com/user-attachments/assets/572dfd05-b825-4457-9362-c31f8796ecf3" />
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+## To run this project:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+git clone https://github.com/manuelperche/Gmail-clone.git
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+cd Gmail-clone
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+yarn install
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+yarn run dev
 ```
