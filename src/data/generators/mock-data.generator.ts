@@ -186,7 +186,7 @@ export class MockDataGenerator {
           body: isSentEmail ? this.getRandomSentBody() : this.getRandomBody(),
           timestamp,
           isStarred: Math.random() > 0.9,
-          isRead: true, // Sent emails are always "read"
+          isRead: isSentEmail ? true : Math.random() > 0.3, // Sent emails always read, received emails sometimes unread
           isDraft: false,
           isSent: isSentEmail,
         });

@@ -29,7 +29,8 @@ export const ThreadDetailPage = () => {
     snooze: 'Snooze',
     notSpam: 'Not spam',
     restore: 'Move to Inbox',
-    deleteForever: 'Delete forever'
+    deleteForever: 'Delete forever',
+    unsnooze: 'Unsnooze'
   };
 
   const getOperationIcon = (operation: string) => {
@@ -43,6 +44,7 @@ export const ThreadDetailPage = () => {
       case 'notSpam': return CheckCircle;
       case 'restore': return RotateCcw;
       case 'deleteForever': return X;
+      case 'unsnooze': return Clock;
       default: return Mail;
     }
   };
@@ -78,7 +80,21 @@ export const ThreadDetailPage = () => {
       
       <div className="flex-1 overflow-auto bg-[#f6f8fc]">
         <div className="max-w-4xl mx-auto p-6">
-          <h1 className="text-xl font-normal text-[#202124] mb-8">{thread.emails[0].subject}</h1>
+          <div className="flex items-center mb-8">
+            <h1 className="text-xl font-normal text-[#202124] flex-1">{thread.emails[0].subject}</h1>
+            {thread.isSnoozed && (
+              <Tooltip content="Snoozed">
+                <div className="flex items-center text-[#5f6368]">
+                  <Clock size={20} className="mr-2" />
+                  {thread.snoozedUntil && (
+                    <span className="text-sm">
+                      Until {thread.snoozedUntil.toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              </Tooltip>
+            )}
+          </div>
           
           <div className="space-y-3">
             {thread.emails.map((email) => (

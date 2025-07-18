@@ -33,14 +33,21 @@ export class EmailService {
 
     const filteredThreads = allThreads.filter((thread) => {
       switch (grouping) {
-        case "inbox":
+        case "inbox": {
+          // A thread should be in inbox if it has at least one email
+          // that was sent TO the user (not a draft, not only sent by the user)
+          const hasIncomingEmail = thread.emails.some((e) => 
+            !e.isDraft && !e.isSent
+          );
+          
           return (
             !thread.isArchived &&
             !thread.isSpam &&
             !thread.isTrashed &&
             !thread.isSnoozed &&
-            !thread.emails.every((e) => e.isDraft)
+            hasIncomingEmail
           );
+        }
         case "starred":
           return thread.emails.some((e) => e.isStarred) && !thread.isTrashed;
         case "snoozed":
@@ -73,7 +80,7 @@ export class EmailService {
               .map((e) => e.from.name)
           ),
         ];
-        const hasUnread = thread.emails.some((e) => !e.isRead && !e.isSent);
+        const hasUnread = thread.emails.some((e) => !e.isRead);
 
         return {
           threadId: thread.id,
@@ -158,7 +165,7 @@ export class EmailService {
       if (thread) {
         const updatedEmails = thread.emails.map((email) => ({
           ...email,
-          isRead: email.isSent ? email.isRead : true,
+          isRead: true,
         }));
         this.updateThread({ ...thread, emails: updatedEmails });
       }
@@ -171,7 +178,7 @@ export class EmailService {
       if (thread) {
         const updatedEmails = thread.emails.map((email) => ({
           ...email,
-          isRead: email.isSent ? email.isRead : false,
+          isRead: false,
         }));
         this.updateThread({ ...thread, emails: updatedEmails });
       }
